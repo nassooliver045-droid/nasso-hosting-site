@@ -31,6 +31,9 @@ async function initDb() {
       name VARCHAR(100) NOT NULL,
       email VARCHAR(190) NOT NULL UNIQUE,
       password_hash TEXT NOT NULL,
+      discord_id VARCHAR(32) UNIQUE,
+      discord_username VARCHAR(100),
+      discord_avatar TEXT,
       role VARCHAR(20) NOT NULL DEFAULT 'customer' CHECK (role IN ('customer','admin')),
       status VARCHAR(20) NOT NULL DEFAULT 'active' CHECK (status IN ('active','blocked')),
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -103,7 +106,12 @@ function admin(req, res, next) {
   next();
 }
 function cleanUser(row) {
-  return { id: row.id, name: row.name, email: row.email, role: row.role, status: row.status };
+  return {
+    id: row.id, name: row.name, email: row.email, role: row.role, status: row.status,
+    discord_id: row.discord_id || null,
+    discord_username: row.discord_username || null,
+    discord_avatar: row.discord_avatar || null
+  };
 }
 
 app.get("/api/health", async (_req, res) => {
@@ -140,6 +148,67 @@ app.post("/api/auth/login", async (req, res) => {
       return res.status(401).json({ error: "E-mail ou senha incorretos, ou conta bloqueada." });
     res.json({ token: sign(user), user: cleanUser(user) });
   } catch (e) { console.error(e); res.status(500).json({ error: "Falha ao entrar." }); }
+});
+
+
+app.post("/api/auth/discord/url", auth, async (req, res) => {
+  if (!process.env.DISCORD_CLIENT_ID || !process.env.DISCORD_CLIENT_SECRET || !process.env.DISCORD_REDIRECT_URI)
+    return res.status(503).json({ error: "Conexao com Discord ainda nao configurada." });
+  const state = jwt.sign({ purpose: "discord-link", uid: req.auth.id }, process.env.JWT_SECRET, { expiresIn: "10m" });
+  const params = new URLSearchParams({
+    client_id: process.env.DISCORD_CLIENT_ID,
+    redirect_uri: process.env.DISCORD_REDIRECT_URI,
+    response_type: "code",
+    scope: "identify",
+    state
+  });
+  res.json({ url: "https://discord.com/oauth2/authorize?" + params.toString() });
+});
+
+app.get("/api/auth/discord/callback", async (req, res) => {
+  const fail = () => res.redirect("/area.html?discord=error");
+  try {
+    const code = String(req.query.code || "");
+    const state = String(req.query.state || "");
+    if (!code || !state || !process.env.DISCORD_CLIENT_ID || !process.env.DISCORD_CLIENT_SECRET || !process.env.DISCORD_REDIRECT_URI)
+      return fail();
+    const claims = jwt.verify(state, process.env.JWT_SECRET);
+    if (claims.purpose !== "discord-link" || !claims.uid) return fail();
+
+    const tokenResponse = await fetch("https://discord.com/api/oauth2/token", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        client_id: process.env.DISCORD_CLIENT_ID,
+        client_secret: process.env.DISCORD_CLIENT_SECRET,
+        grant_type: "authorization_code",
+        code,
+        redirect_uri: process.env.DISCORD_REDIRECT_URI
+      })
+    });
+    if (!tokenResponse.ok) return fail();
+    const tokenData = await tokenResponse.json();
+    const profileResponse = await fetch("https://discord.com/api/users/@me", {
+      headers: { Authorization: "Bearer " + tokenData.access_token }
+    });
+    if (!profileResponse.ok) return fail();
+    const profile = await profileResponse.json();
+    if (!profile.id || !profile.username) return fail();
+
+    await pool.query(
+      "UPDATE users SET discord_id=$1, discord_username=$2, discord_avatar=$3 WHERE id=$4 AND status='active'",
+      [String(profile.id), String(profile.username).slice(0,100),
+       profile.avatar ? "https://cdn.discordapp.com/avatars/" + profile.id + "/" + profile.avatar + ".png" : null,
+       claims.uid]
+    );
+    const owner = await pool.query("SELECT id FROM users WHERE id=$1 AND discord_id=$2", [claims.uid, String(profile.id)]);
+    if (!owner.rowCount) return fail();
+    res.redirect("/area.html?discord=connected");
+  } catch (e) {
+    if (e.code === "23505") return res.redirect("/area.html?discord=already-linked");
+    console.error("Falha ao vincular Discord:", e);
+    return fail();
+  }
 });
 
 app.get("/api/me", auth, async (req, res) => {
