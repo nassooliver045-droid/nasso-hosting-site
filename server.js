@@ -17,7 +17,7 @@ const pool = new Pool({
 app.set("trust proxy", 1);
 app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
 app.use(cors({
-  origin: (process.env.FRONTEND_URL || "https://nasso-hosting-site.onrender.com").split(",").map(v => v.trim()),
+  origin: (process.env.FRONTEND_URL || "https://nasso-hosting-site.vercel.app,https://nasso-hosting-site-nassooliver045-1802.vercel.app").split(",").map(v => v.trim()),
   methods: ["GET", "POST", "PATCH", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"]
 }));
@@ -287,5 +287,9 @@ app.get("/api/admin/tickets", auth, admin, async (_req, res) => {
 });
 app.use((err, _req, res, _next) => { console.error(err); res.status(500).json({ error: "Erro interno." }); });
 
-initDb().then(() => app.listen(PORT, () => console.log("Nasso API online na porta " + PORT)))
-  .catch(err => { console.error("Falha ao iniciar banco:", err); process.exit(1); });
+module.exports = { app, initDb };
+
+if (require.main === module) {
+  initDb().then(() => app.listen(PORT, () => console.log("Nasso API online na porta " + PORT)))
+    .catch(err => { console.error("Falha ao iniciar banco:", err); process.exit(1); });
+}
