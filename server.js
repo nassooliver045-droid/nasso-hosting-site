@@ -87,11 +87,14 @@ async function initDb() {
 function sign(user) {
   return jwt.sign({ id: String(user.id), role: user.role }, process.env.JWT_SECRET, { expiresIn: "12h" });
 }
-function auth(req, res, next) {
-  const token = (req.headers.authorization || "").replace(/^Bearer\s+/i, "");
+async function auth(req, res, next) {
+  const token = (req.headers.authorization || "").replace(/^Bearer\\s+/i, "");
   try {
     if (!token) throw new Error("missing");
-    req.auth = jwt.verify(token, process.env.JWT_SECRET);
+    const claims = jwt.verify(token, process.env.JWT_SECRET);
+    const current = await pool.query("SELECT id,role,status FROM users WHERE id=$1", [claims.id]);
+    if (!current.rowCount || current.rows[0].status !== "active") return res.status(403).json({ error: "Conta bloqueada ou indisponivel." });
+    req.auth = { id: String(current.rows[0].id), role: current.rows[0].role };
     next();
   } catch { res.status(401).json({ error: "Sessao invalida. Entre novamente." }); }
 }
@@ -235,6 +238,10 @@ app.patch("/api/admin/users/:id/status", auth, admin, async (req, res) => {
   const r = await pool.query("UPDATE users SET status=$1 WHERE id=$2 AND role='customer' RETURNING id,name,email,status", [status,req.params.id]);
   if (!r.rowCount) return res.status(404).json({ error: "Cliente nao encontrado." });
   res.json({ user: r.rows[0] });
+});
+app.get("/api/admin/hostings", auth, admin, async (_req, res) => {
+  const r = await pool.query("SELECT h.id,h.user_id,h.title,h.game,h.slots,h.price_cents,h.due_date,h.status,h.ptero_identifier,u.name AS customer_name,u.email FROM hosting_services h JOIN users u ON u.id=h.user_id ORDER BY h.created_at DESC");
+  res.json({ hostings: r.rows });
 });
 app.post("/api/admin/hostings", auth, admin, async (req, res) => {
   const userId = Number(req.body.user_id), slots = Number(req.body.slots), price = Number(req.body.price_cents || 0);
