@@ -85,6 +85,8 @@ $("#discordConnect").onclick=async()=>{
   } catch(e) { showMsg("#discordMsg",e.message,true); }
 };
 function updateDiscord(){
+  const notice=sessionStorage.getItem("nasso_discord_notice");
+  if(notice){showMsg("#discordMsg",notice,notice!=="Discord conectado à sua conta com sucesso.");sessionStorage.removeItem("nasso_discord_notice");}
   const linked=Boolean(currentUser&&currentUser.discord_id);
   $("#discordStatus").textContent=linked
     ? "Conectado como "+(currentUser.discord_username||"usuário Discord")
@@ -123,9 +125,9 @@ $("#newUserForm").onsubmit=async e=>{e.preventDefault();try{await api("/admin/us
 $("#newHostingForm").onsubmit=async e=>{e.preventDefault();const f=Object.fromEntries(new FormData(e.target));f.user_id=Number(f.user_id);f.slots=Number(f.slots);f.price_cents=Math.round(Number(f.price||0)*100);delete f.price;try{await api("/admin/hostings",{method:"POST",body:JSON.stringify(f)});e.target.reset();alert("Hospedagem associada ao cliente.");await loadAdmin();}catch(err){alert(err.message);}};
 $("#newPaymentForm").onsubmit=async e=>{e.preventDefault();const f=Object.fromEntries(new FormData(e.target));f.user_id=Number(f.user_id);f.amount_cents=Math.round(Number(f.amount||0)*100);delete f.amount;try{await api("/admin/payments",{method:"POST",body:JSON.stringify(f)});e.target.reset();alert("Pagamento registrado.");}catch(err){alert(err.message);}};
 const discordResult=new URLSearchParams(location.search).get("discord");
-if(discordResult==="connected") showMsg("#authMsg","Discord conectado à sua conta com sucesso.");
-else if(discordResult==="already-linked") showMsg("#authMsg","Esta conta Discord já está vinculada a outro cliente.",true);
-else if(discordResult==="error") showMsg("#authMsg","Não foi possível conectar o Discord. Tente novamente.",true);
+if(discordResult==="connected") sessionStorage.setItem("nasso_discord_notice","Discord conectado à sua conta com sucesso.");
+else if(discordResult==="already-linked") sessionStorage.setItem("nasso_discord_notice","Esta conta Discord já está vinculada a outro cliente.");
+else if(discordResult==="error") sessionStorage.setItem("nasso_discord_notice","Não foi possível conectar o Discord. Tente novamente.");
 if(discordResult) history.replaceState({}, "", "/area.html");
 if(token){loadDashboard().catch(()=>{$("#logout").click();});}
 </script>
