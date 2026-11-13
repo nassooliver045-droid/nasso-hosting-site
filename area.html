@@ -41,6 +41,14 @@
       <label class="field">URL do painel<input name="panel_url" type="url" placeholder="https://painel.seudominio.com"></label><label class="field">Identificador do servidor Pterodactyl<input name="ptero_identifier" placeholder="Ex.: abc123"></label>
       <button class="btn wide">Associar hospedagem</button>
     </form></div>
+    <div class="card section"><h3>Atualizar hospedagens e vencimentos</h3><div id="adminHostings" class="table-wrap"></div></div>
+    <div class="card section"><h3>Registrar pagamento</h3><form id="newPaymentForm" class="admin-form">
+      <label class="field">Cliente<select name="user_id" id="paymentUser" required></select></label>
+      <label class="field">Valor (R$)<input name="amount" type="number" min="0" step=".01" required></label>
+      <label class="field wide">Descrição<input name="description" placeholder="Mensalidade da hospedagem" required></label>
+      <label class="field">Status<select name="status"><option value="pending">Pendente</option><option value="paid">Pago</option><option value="cancelled">Cancelado</option></select></label>
+      <button class="btn wide">Registrar pagamento</button>
+    </form></div>
     <div class="card section"><h3>Clientes cadastrados</h3><div id="adminUsers" class="table-wrap"></div></div>
     <div class="card section"><h3>Solicitações de suporte</h3><div id="adminTickets" class="table-wrap"></div></div>
   </section>
@@ -79,14 +87,19 @@ function escapeHtml(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;",
 function safeUrl(s){try{const u=new URL(s);return ["http:","https:"].includes(u.protocol)?u.href:"#";}catch{return "#";}}
 $("#ticketForm").onsubmit=async e=>{e.preventDefault();try{await api("/tickets",{method:"POST",body:JSON.stringify(Object.fromEntries(new FormData(e.target)))});e.target.reset();showMsg("#ticketMsg","Solicitação enviada.");await loadDashboard();}catch(err){showMsg("#ticketMsg",err.message,true);}};
 async function loadAdmin(){
-  const [users,tickets]=await Promise.all([api("/admin/users"),api("/admin/tickets")]);
-  $("#hostingUser").innerHTML=users.users.filter(u=>u.role==="customer").map(u=>`<option value="${u.id}">${escapeHtml(u.name)} — ${escapeHtml(u.email)}</option>`).join("");
+  const [users,tickets,hostings]=await Promise.all([api("/admin/users"),api("/admin/tickets"),api("/admin/hostings")]);
+  const customerOptions=users.users.filter(u=>u.role==="customer").map(u=>`<option value="${u.id}">${escapeHtml(u.name)} — ${escapeHtml(u.email)}</option>`).join("");
+  $("#hostingUser").innerHTML=customerOptions;
+  $("#paymentUser").innerHTML=customerOptions;
+  $("#adminHostings").innerHTML=hostings.hostings.length?'<table class="table"><thead><tr><th>Cliente</th><th>Servidor</th><th>Slots</th><th>Vencimento</th><th>Status</th><th>Ação</th></tr></thead><tbody>'+hostings.hostings.map(x=>`<tr><td>${escapeHtml(x.customer_name)}</td><td>${escapeHtml(x.title)}</td><td>${x.slots}</td><td>${x.due_date?new Date(x.due_date).toLocaleDateString("pt-BR",{timeZone:"UTC"}):"A definir"}</td><td>${x.status}</td><td><button class="btn alt" data-hosting-edit="${x.id}" data-due="${x.due_date||""}" data-status="${x.status}">Editar</button></td></tr>`).join("")+'</tbody></table>':'<div class="empty">Nenhuma hospedagem cadastrada.</div>';
+  $("#adminHostings").querySelectorAll("[data-hosting-edit]").forEach(b=>b.onclick=async()=>{const due=prompt("Novo vencimento (AAAA-MM-DD). Deixe vazio para manter:",b.dataset.due);if(due===null)return;const status=prompt("Status: active, suspended ou expired",b.dataset.status);if(status===null)return;try{await api("/admin/hostings/"+b.dataset.hostingEdit,{method:"PATCH",body:JSON.stringify({due_date:due||undefined,status})});await loadAdmin();}catch(e){alert(e.message);}});
   $("#adminUsers").innerHTML='<table class="table"><thead><tr><th>Cliente</th><th>E-mail</th><th>Status</th><th>Ação</th></tr></thead><tbody>'+users.users.filter(u=>u.role==="customer").map(u=>`<tr><td>${escapeHtml(u.name)}</td><td>${escapeHtml(u.email)}</td><td>${u.status}</td><td><button class="btn alt" data-user="${u.id}" data-status="${u.status==="active"?"blocked":"active"}">${u.status==="active"?"Bloquear":"Liberar"}</button></td></tr>`).join("")+'</tbody></table>';
   $("#adminUsers").querySelectorAll("[data-user]").forEach(b=>b.onclick=async()=>{try{await api("/admin/users/"+b.dataset.user+"/status",{method:"PATCH",body:JSON.stringify({status:b.dataset.status})});await loadAdmin();}catch(e){alert(e.message);}});
   $("#adminTickets").innerHTML=tickets.tickets.length?'<table class="table"><thead><tr><th>Cliente</th><th>Assunto</th><th>Mensagem</th><th>Status</th></tr></thead><tbody>'+tickets.tickets.map(t=>`<tr><td>${escapeHtml(t.customer_name)}</td><td>${escapeHtml(t.subject)}</td><td>${escapeHtml(t.message)}</td><td>${t.status}</td></tr>`).join("")+'</tbody></table>':'<div class="empty">Nenhum chamado.</div>';
 }
 $("#newUserForm").onsubmit=async e=>{e.preventDefault();try{await api("/admin/users",{method:"POST",body:JSON.stringify(Object.fromEntries(new FormData(e.target)))});e.target.reset();alert("Cliente cadastrado.");await loadAdmin();}catch(err){alert(err.message);}};
 $("#newHostingForm").onsubmit=async e=>{e.preventDefault();const f=Object.fromEntries(new FormData(e.target));f.user_id=Number(f.user_id);f.slots=Number(f.slots);f.price_cents=Math.round(Number(f.price||0)*100);delete f.price;try{await api("/admin/hostings",{method:"POST",body:JSON.stringify(f)});e.target.reset();alert("Hospedagem associada ao cliente.");await loadAdmin();}catch(err){alert(err.message);}};
+$("#newPaymentForm").onsubmit=async e=>{e.preventDefault();const f=Object.fromEntries(new FormData(e.target));f.user_id=Number(f.user_id);f.amount_cents=Math.round(Number(f.amount||0)*100);delete f.amount;try{await api("/admin/payments",{method:"POST",body:JSON.stringify(f)});e.target.reset();alert("Pagamento registrado.");}catch(err){alert(err.message);}};
 if(token){loadDashboard().catch(()=>{$("#logout").click();});}
 </script>
 </body></html>
