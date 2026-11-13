@@ -72,6 +72,11 @@ async function initDb() {
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
   `);
+  await pool.query(`
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS discord_id VARCHAR(32) UNIQUE;
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS discord_username VARCHAR(100);
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS discord_avatar TEXT;
+  `);
 
   if (process.env.ADMIN_EMAIL && process.env.ADMIN_PASSWORD) {
     const email = process.env.ADMIN_EMAIL.toLowerCase().trim();
@@ -212,7 +217,7 @@ app.get("/api/auth/discord/callback", async (req, res) => {
 });
 
 app.get("/api/me", auth, async (req, res) => {
-  const r = await pool.query("SELECT id,name,email,role,status FROM users WHERE id=$1", [req.auth.id]);
+  const r = await pool.query("SELECT id,name,email,role,status,discord_id,discord_username,discord_avatar FROM users WHERE id=$1", [req.auth.id]);
   if (!r.rowCount || r.rows[0].status !== "active") return res.status(403).json({ error: "Conta indisponivel." });
   res.json({ user: cleanUser(r.rows[0]) });
 });
