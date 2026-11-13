@@ -24,6 +24,13 @@
 </div>
 <div id="dashboard" class="hidden">
   <div class="top"><div><span class="tag">PAINEL DO CLIENTE</span><h1 style="margin:8px 0 0">Olá, <span id="customerName">cliente</span>!</h1><p class="muted" style="margin:2px 0">Gerencie suas hospedagens Nasso Hosting.</p></div><button class="btn alt" id="logout">Sair</button></div>
+  <section class="section card" style="margin:0 0 20px">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap">
+      <div><h3 style="margin:0 0 4px">Conta Discord</h3><div class="muted" id="discordStatus">Conecte seu Discord para vincular sua identidade à conta Nasso Hosting.</div></div>
+      <button class="btn alt" id="discordConnect" type="button">Conectar Discord</button>
+    </div>
+    <div id="discordMsg" aria-live="polite"></div>
+  </section>
   <div class="grid">
     <div class="card"><div class="muted">Hospedagens</div><div class="metric" id="hostingCount">0</div></div>
     <div class="card"><div class="muted">Slots contratados</div><div class="metric" id="slotCount">0</div></div>
@@ -71,10 +78,25 @@ function setMode(next){mode=next;$("#nameField").classList.toggle("hidden",mode!
 $("#loginTab").onclick=()=>setMode("login");$("#registerTab").onclick=()=>setMode("register");
 $("#authForm").onsubmit=async e=>{e.preventDefault();const f=Object.fromEntries(new FormData(e.target));try{const d=await api("/auth/"+mode,{method:"POST",body:JSON.stringify(f)});token=d.token;sessionStorage.setItem("nasso_token",token);await loadDashboard();}catch(err){showMsg("#authMsg",err.message,true);}};
 $("#logout").onclick=()=>{token="";currentUser=null;sessionStorage.removeItem("nasso_token");$("#dashboard").classList.add("hidden");$("#authView").classList.remove("hidden");};
+$("#discordConnect").onclick=async()=>{
+  try {
+    const d=await api("/auth/discord/url",{method:"POST",body:"{}"});
+    window.location.href=d.url;
+  } catch(e) { showMsg("#discordMsg",e.message,true); }
+};
+function updateDiscord(){
+  const linked=Boolean(currentUser&&currentUser.discord_id);
+  $("#discordStatus").textContent=linked
+    ? "Conectado como "+(currentUser.discord_username||"usuário Discord")
+    : "Nenhuma conta Discord conectada.";
+  $("#discordConnect").textContent=linked?"Conectar outra conta Discord":"Conectar Discord";
+  $("#discordConnect").classList.toggle("alt",!linked);
+}
+
 function statusTag(s){return s==="active"?"Ativa":s==="suspended"?"Suspensa":s==="expired"?"Vencida":s;}
 async function loadDashboard(){
   const [me,hosts,payments,tickets]=await Promise.all([api("/me"),api("/hostings"),api("/payments"),api("/tickets")]);
-  currentUser=me.user;$("#authView").classList.add("hidden");$("#dashboard").classList.remove("hidden");$("#customerName").textContent=currentUser.name;
+  currentUser=me.user;$("#authView").classList.add("hidden");$("#dashboard").classList.remove("hidden");$("#customerName").textContent=currentUser.name;updateDiscord();
   $("#hostingCount").textContent=hosts.hostings.length;$("#slotCount").textContent=hosts.hostings.reduce((a,h)=>a+Number(h.slots),0);$("#pendingCount").textContent=payments.payments.filter(p=>p.status==="pending").length;
   $("#hostingList").innerHTML=hosts.hostings.length?hosts.hostings.map(h=>`<article class="card"><span class="tag">${h.game} • ${h.slots} SLOTS</span><h3>${escapeHtml(h.title)}</h3><p class="muted">Vencimento: ${h.due_date?new Date(h.due_date).toLocaleDateString("pt-BR",{timeZone:"UTC"}):"A definir"}</p><p>Status: <strong>${statusTag(h.status)}</strong></p><p class="metric">${money(h.price_cents)}<span class="muted" style="font-size:12px"> / ciclo</span></p><div class="actions">${h.panel_url?`<a class="btn alt" href="${safeUrl(h.panel_url)}" target="_blank" rel="noopener">Abrir painel ↗</a>`:""}<button class="btn" data-power="${h.id}" data-signal="start" ${h.status!=="active"||!h.ptero_identifier?"disabled":""}>Iniciar</button><button class="btn alt" data-power="${h.id}" data-signal="restart" ${h.status!=="active"||!h.ptero_identifier?"disabled":""}>Reiniciar</button><button class="btn danger" data-power="${h.id}" data-signal="stop" ${h.status!=="active"||!h.ptero_identifier?"disabled":""}>Parar</button></div></article>`).join(""):'<div class="empty">Nenhuma hospedagem associada. Se você já comprou, fale com o suporte para vincularem o serviço à sua conta.</div>';
   $("#hostingList").querySelectorAll("[data-power]").forEach(btn=>btn.onclick=async()=>{if(!confirm("Enviar comando "+btn.dataset.signal+" para este servidor?"))return;try{await api("/hostings/"+btn.dataset.power+"/power",{method:"POST",body:JSON.stringify({signal:btn.dataset.signal})});alert("Comando enviado ao Pterodactyl.");}catch(e){alert(e.message);}});
@@ -100,6 +122,11 @@ async function loadAdmin(){
 $("#newUserForm").onsubmit=async e=>{e.preventDefault();try{await api("/admin/users",{method:"POST",body:JSON.stringify(Object.fromEntries(new FormData(e.target)))});e.target.reset();alert("Cliente cadastrado.");await loadAdmin();}catch(err){alert(err.message);}};
 $("#newHostingForm").onsubmit=async e=>{e.preventDefault();const f=Object.fromEntries(new FormData(e.target));f.user_id=Number(f.user_id);f.slots=Number(f.slots);f.price_cents=Math.round(Number(f.price||0)*100);delete f.price;try{await api("/admin/hostings",{method:"POST",body:JSON.stringify(f)});e.target.reset();alert("Hospedagem associada ao cliente.");await loadAdmin();}catch(err){alert(err.message);}};
 $("#newPaymentForm").onsubmit=async e=>{e.preventDefault();const f=Object.fromEntries(new FormData(e.target));f.user_id=Number(f.user_id);f.amount_cents=Math.round(Number(f.amount||0)*100);delete f.amount;try{await api("/admin/payments",{method:"POST",body:JSON.stringify(f)});e.target.reset();alert("Pagamento registrado.");}catch(err){alert(err.message);}};
+const discordResult=new URLSearchParams(location.search).get("discord");
+if(discordResult==="connected") showMsg("#authMsg","Discord conectado à sua conta com sucesso.");
+else if(discordResult==="already-linked") showMsg("#authMsg","Esta conta Discord já está vinculada a outro cliente.",true);
+else if(discordResult==="error") showMsg("#authMsg","Não foi possível conectar o Discord. Tente novamente.",true);
+if(discordResult) history.replaceState({}, "", "/area.html");
 if(token){loadDashboard().catch(()=>{$("#logout").click();});}
 </script>
 </body></html>
