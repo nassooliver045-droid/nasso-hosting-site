@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: esportebet-demo
+    runtime: node
+    region: ohio
+    plan: free
+    buildCommand: cd esportebet && npm install --omit=dev
+    startCommand: cd esportebet && npm start
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: esportebet-db
+          property: connectionString
+
+databases:
+  - name: esportebet-db
+    plan: free
+    postgresMajorVersion: "18"
+    databaseName: esportebet_db
+    user: esportebet_db_user
