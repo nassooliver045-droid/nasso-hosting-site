@@ -1,0 +1,12 @@
+{
+  "name": "esportebet-demo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Demonstração informativa EsporteBet — sem apostas ou transações reais",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
