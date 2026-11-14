@@ -2,21 +2,71 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#08110e"><meta name="description" content="EsporteBet — central demonstrativa de informações esportivas.">
-<title>EsporteBet | Esportes em destaque</title><link rel="stylesheet" href="/style.css">
+<meta name="theme-color" content="#08110e">
+<meta name="description" content="EsporteBet — agenda e placares de futebol com dados esportivos atualizados.">
+<title>EsporteBet | Central de futebol</title>
+<link rel="stylesheet" href="/style.css">
+<script src="/app.js" defer></script>
 </head>
 <body>
-<header class="topbar"><a class="brand" href="#"><span class="mark">E</span> ESPORTE<span class="green">BET</span></a><nav><a href="#jogos">Jogos</a><a href="#sobre">Sobre</a></nav><span class="demo">MODO DEMONSTRAÇÃO</span></header>
+<header class="topbar">
+  <a class="brand" href="#"><span class="mark">E</span> ESPORTE<span class="green">BET</span></a>
+  <nav><a href="#jogos">Partidas</a><a href="#competicoes">Competições</a><a href="#sobre">Sobre</a></nav>
+  <span class="demo">CENTRAL ESPORTIVA</span>
+</header>
 <main>
-<section class="hero"><div class="eyebrow">⚡ CENTRAL ESPORTIVA</div><h1>A emoção do esporte.<br><span>Em um só lugar.</span></h1><p>Acompanhe modalidades, partidas e informações esportivas em uma experiência moderna.</p><a class="cta" href="#jogos">Explorar partidas <span>→</span></a><div class="hero-note">Projeto demonstrativo • Sem apostas com dinheiro real</div></section>
-<section id="jogos" class="section"><div class="section-head"><div><div class="eyebrow">AGENDA ESPORTIVA</div><h2>Em destaque</h2></div><span class="live-label"><i></i> EXEMPLOS ILUSTRATIVOS</span></div>
-<div class="notice">Os confrontos e horários abaixo são exemplos fictícios para demonstração da interface. Não representam eventos ou cotações reais.</div>
-<div class="matches">
-<article class="match"><div class="league">⚽ FUTEBOL · EXEMPLO</div><div class="teams"><div><b class="crest">A</b><strong>Atlético Azul</strong></div><span class="vs">VS</span><div><b class="crest">V</b><strong>Vila Verde</strong></div></div><div class="match-foot">Partida demonstrativa <span>Sem odds reais</span></div></article>
-<article class="match"><div class="league">🏀 BASQUETE · EXEMPLO</div><div class="teams"><div><b class="crest">F</b><strong>Fênix BC</strong></div><span class="vs">VS</span><div><b class="crest">T</b><strong>Trovão BC</strong></div></div><div class="match-foot">Partida demonstrativa <span>Sem odds reais</span></div></article>
-<article class="match"><div class="league">⚽ FUTEBOL · EXEMPLO</div><div class="teams"><div><b class="crest">N</b><strong>Nova União</strong></div><span class="vs">VS</span><div><b class="crest">R</b><strong>Real Central</strong></div></div><div class="match-foot">Partida demonstrativa <span>Sem odds reais</span></div></article>
-</div></section>
-<section id="sobre" class="about"><div class="eyebrow">SOBRE O PROJETO</div><h2>EsporteBet está em desenvolvimento.</h2><p>Esta versão é apenas uma demonstração visual. Cadastro de apostadores, carteira, depósitos, saques, bilhetes e apostas com dinheiro real permanecem desativados. Qualquer evolução para operação regulada depende de análise jurídica e das autorizações exigidas pelas autoridades competentes.</p></section>
+  <section class="hero">
+    <div class="eyebrow">⚽ FUTEBOL AO VIVO</div>
+    <h1>O jogo acontece.<br><span>Acompanhe cada lance.</span></h1>
+    <p>Agenda, placares e status de partidas de grandes ligas, Brasileirão e seleções nacionais, com dados de um provedor esportivo.</p>
+    <a class="cta" href="#jogos">Ver partidas <span>→</span></a>
+    <div class="hero-note">Dados esportivos reais • Atualização conforme a cobertura da API</div>
+  </section>
+
+  <section id="jogos" class="section">
+    <div class="section-head">
+      <div><div class="eyebrow">AGENDA E RESULTADOS</div><h2>Partidas</h2></div>
+      <div class="updated"><i></i><span id="updatedAt">Conectando aos dados esportivos…</span></div>
+    </div>
+    <div class="toolbar">
+      <div class="date-tools">
+        <button class="date-arrow" id="prevDay" aria-label="Dia anterior">‹</button>
+        <input id="matchDate" type="date" aria-label="Data das partidas">
+        <button class="date-arrow" id="nextDay" aria-label="Próximo dia">›</button>
+        <button class="today-button" id="todayButton">Hoje</button>
+      </div>
+      <button class="refresh-button" id="refreshButton">↻ Atualizar</button>
+    </div>
+    <div class="filters" role="tablist" aria-label="Filtrar competições">
+      <button class="filter active" data-filter="todos">Todos</button>
+      <button class="filter" data-filter="europa">5 grandes ligas</button>
+      <button class="filter" data-filter="brasileirao">Brasileirão</button>
+      <button class="filter" data-filter="selecoes">Seleções</button>
+    </div>
+    <div id="message" class="message" role="status">Carregando partidas…</div>
+    <div id="matches" class="matches" aria-live="polite"></div>
+    <p class="source-note">Fonte: API-Football / API-Sports. A disponibilidade de partidas, placares e estatísticas depende da cobertura do provedor.</p>
+  </section>
+
+  <section id="competicoes" class="competitions">
+    <div class="eyebrow">COMPETIÇÕES COBERTAS</div>
+    <h2>Futebol do mundo todo.</h2>
+    <div class="competition-grid">
+      <div class="competition"><span>🏴</span><b>Premier League</b><small>Inglaterra</small></div>
+      <div class="competition"><span>🇪🇸</span><b>La Liga</b><small>Espanha</small></div>
+      <div class="competition"><span>🇮🇹</span><b>Serie A</b><small>Itália</small></div>
+      <div class="competition"><span>🇩🇪</span><b>Bundesliga</b><small>Alemanha</small></div>
+      <div class="competition"><span>🇫🇷</span><b>Ligue 1</b><small>França</small></div>
+      <div class="competition"><span>🇧🇷</span><b>Brasileirão Série A</b><small>Brasil</small></div>
+      <div class="competition"><span>🌍</span><b>Seleções</b><small>Competições internacionais e amistosos</small></div>
+    </div>
+  </section>
+
+  <section id="sobre" class="about">
+    <div class="eyebrow">SOBRE A ESPORTEBET</div>
+    <h2>Informação esportiva, com transparência.</h2>
+    <p>Esta versão apresenta agenda e placares de partidas reais. Não aceita apostas, não possui carteira, depósitos ou saques. Cotações de apostas e funcionalidades de aposta permanecem desativadas. Qualquer mudança depende de avaliação jurídica e das autorizações aplicáveis.</p>
+  </section>
 </main>
-<footer><a class="brand" href="#"><span class="mark">E</span> ESPORTE<span class="green">BET</span></a><span>© 2026 EsporteBet · Protótipo demonstrativo</span></footer>
+<footer><a class="brand" href="#"><span class="mark">E</span> ESPORTE<span class="green">BET</span></a><span>© 2026 EsporteBet · Central esportiva demonstrativa</span></footer>
 </body></html>
