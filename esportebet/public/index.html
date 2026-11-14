@@ -12,7 +12,7 @@
 <header class="topbar">
   <a class="brand" href="#"><span class="mark">E</span><span>ESPORTE<span class="green">BET</span></span></a>
   <nav><a class="nav-active" href="#jogos">Esportes</a><a href="#competicoes">Competições</a><a href="#sobre">Sobre</a></nav>
-  <div class="header-actions"><span class="demo">MODO DEMONSTRAÇÃO</span><a class="login-link" href="#sobre">Entrar</a><a class="register-link" href="#sobre">Cadastrar</a></div>
+  <div class="header-actions"><span class="demo">MODO DEMONSTRAÇÃO</span><button class="login-link" id="accountButton" type="button">Entrar</button><span id="accountName" class="account-name" hidden></span><button class="register-link" id="logoutButton" type="button" hidden>Sair</button></div>
 </header>
 <div class="page-shell">
   <aside class="left-sidebar">
@@ -53,7 +53,7 @@
   </main>
   <aside class="right-sidebar">
     <section id="bilhete" class="bet-section"><div class="bet-heading"><div><div class="eyebrow">BILHETE</div><h2>Suas seleções</h2></div><span class="demo-chip">DEMO</span></div><div id="betSelections" class="bet-selections"><p class="empty-slip">Escolha uma cotação demonstrativa para montar seu bilhete.</p></div><div class="bet-controls"><label for="stake">Valor fictício (R$)</label><input id="stake" type="number" min="1" max="10000" step="0.50" value="10"><div class="bet-total"><span>Odd combinada</span><strong id="combinedOdds">—</strong></div><div class="bet-total"><span>Retorno ilustrativo</span><strong id="potentialReturn">R$ 0,00</strong></div><div class="bet-actions"><button id="clearBet" class="clear-bet" type="button">Limpar</button><button id="simulateBet" class="simulate-bet" type="button" disabled>Simular</button></div><p id="betFeedback" class="bet-feedback" role="status">Valores fictícios. Nenhuma transação real.</p></div></section>
-    <div class="right-info"><strong>Jogo responsável</strong><p>Esta plataforma está em modo de demonstração e não movimenta dinheiro.</p></div>
+    <section class="history-section" id="historySection"><div class="history-heading"><strong>Meu histórico</strong><button type="button" id="historyRefresh">Atualizar</button></div><div id="betHistory"><p class="history-empty">Entre na sua conta para consultar seus bilhetes demonstrativos.</p></div></section><div class="right-info"><strong>Jogo responsável</strong><p>Esta plataforma está em modo de demonstração e não movimenta dinheiro.</p></div>
   </aside>
 </div>
 </body></html>
