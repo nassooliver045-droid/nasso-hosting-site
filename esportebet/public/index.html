@@ -56,4 +56,18 @@
     <section class="history-section" id="historySection"><div class="history-heading"><strong>Meu histórico</strong><button type="button" id="historyRefresh">Atualizar</button></div><div id="betHistory"><p class="history-empty">Entre na sua conta para consultar seus bilhetes demonstrativos.</p></div></section><div class="right-info"><strong>Jogo responsável</strong><p>Esta plataforma está em modo de demonstração e não movimenta dinheiro.</p></div>
   </aside>
 </div>
+<div class="account-modal" id="accountModal" hidden>
+  <div class="account-dialog" role="dialog" aria-modal="true" aria-labelledby="accountTitle">
+    <button type="button" class="modal-close" id="closeAccount" aria-label="Fechar">×</button>
+    <div class="eyebrow">ÁREA DO CLIENTE</div><h2 id="accountTitle">Acesse sua conta</h2>
+    <div class="account-tabs"><button type="button" class="account-tab active" data-account-mode="login">Entrar</button><button type="button" class="account-tab" data-account-mode="register">Criar conta</button></div>
+    <form id="accountForm">
+      <label for="accountFullName" id="nameLabel" hidden>Nome</label><input id="accountFullName" name="name" autocomplete="name" placeholder="Seu nome" hidden>
+      <label for="accountEmail">E-mail</label><input id="accountEmail" name="email" type="email" autocomplete="email" required maxlength="254" placeholder="voce@email.com">
+      <label for="accountPassword">Senha</label><input id="accountPassword" name="password" type="password" autocomplete="current-password" required minlength="10" maxlength="128" placeholder="Mínimo de 10 caracteres">
+      <p class="account-feedback" id="accountFeedback" role="status"></p><button class="register-link account-submit" type="submit" id="accountSubmit">Entrar</button>
+    </form>
+    <p class="account-legal">Conta para salvar histórico de simulações. Não há depósitos, saques ou apostas com dinheiro real.</p>
+  </div>
+</div>
 </body></html>
