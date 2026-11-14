@@ -274,7 +274,9 @@ async function handleAccount(req, res, pathname) {
     return sendJson(res,503,{error:"Serviço de conta temporariamente indisponível."});
   }
 }
-\nconst server = http.createServer(async (req, res) => {\n  const accountPath = new URL(req.url, "http://localhost").pathname;\n  if (accountPath.startsWith("/api/auth/") || accountPath === "/api/bets") return handleAccount(req, res, accountPath);
+const server = http.createServer(async (req, res) => {
+  const accountPath = new URL(req.url, "http://localhost").pathname;
+  if (accountPath.startsWith("/api/auth/") || accountPath === "/api/bets") return handleAccount(req, res, accountPath);
   let pathname;
   try {
     pathname = decodeURIComponent(new URL(req.url, "http://localhost").pathname);
