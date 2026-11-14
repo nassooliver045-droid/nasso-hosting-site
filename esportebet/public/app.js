@@ -173,7 +173,7 @@ function setAccount(user){
   loadBetHistory();
 }
 document.querySelectorAll("[data-account-mode]").forEach(button=>button.addEventListener("click",()=>setAccountMode(button.dataset.accountMode)));
-$("#accountButton").addEventListener("click",()=>openAccount(accountUser?"login":"login"));
+$("#accountButton").addEventListener("click",()=>{if(accountUser){$("#historySection").scrollIntoView({behavior:"smooth"});loadBetHistory();}else openAccount("login");});
 $("#closeAccount").addEventListener("click",closeAccount);
 $("#accountModal").addEventListener("click",event=>{if(event.target===$("#accountModal"))closeAccount();});
 $("#accountForm").addEventListener("submit",async event=>{
