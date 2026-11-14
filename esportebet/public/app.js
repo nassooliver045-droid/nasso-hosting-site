@@ -127,10 +127,72 @@ document.addEventListener("click",event=>{
 });
 $("#stake").addEventListener("input",renderBetSlip);
 $("#clearBet").addEventListener("click",()=>{state.selections=[];renderBetSlip();if(window.lastMatchData)render(window.lastMatchData);});
-$("#simulateBet").addEventListener("click",()=>{
+$("#simulateBet").addEventListener("click",async()=>{
   const stake=Number($("#stake").value),odds=state.selections.reduce((total,item)=>total*item.odd,1);
-  alert("SIMULAÇÃO ESPORTEBET\\n"+state.selections.map(item=>item.fixture+" — "+item.label+" ("+item.odd.toFixed(2)+")").join("\\n")+"\\nValor fictício: "+stake.toLocaleString("pt-BR",{style:"currency",currency:"BRL"})+"\\nOdd combinada: "+odds.toFixed(2)+"\\nRetorno ilustrativo: "+(stake*odds).toLocaleString("pt-BR",{style:"currency",currency:"BRL"})+"\\n\\nNenhuma aposta ou transação real foi realizada.");
+  if(!accountUser){openAccount("login");$("#accountFeedback").textContent="Entre ou crie uma conta para salvar este bilhete no seu histórico.";return;}
+  const button=$("#simulateBet");button.disabled=true;button.textContent="Salvando…";
+  try{
+    const response=await fetch("/api/bets",{method:"POST",headers:{"Content-Type":"application/json"},credentials:"same-origin",body:JSON.stringify({stake,combinedOdds:odds,selections:state.selections})});
+    const data=await response.json();if(!response.ok)throw new Error(data.error||"Não foi possível salvar o bilhete.");
+    $("#betFeedback").textContent="Simulação salva no seu histórico. Nenhuma aposta real foi realizada.";
+    await loadBetHistory();
+  }catch(error){$("#betFeedback").textContent=error.message;}
+  finally{button.textContent="Simular";renderBetSlip();}
 });
+
+let accountUser=null, accountMode="login";
+function openAccount(mode="login"){accountMode=mode;$("#accountModal").hidden=false;setAccountMode(mode);$("#accountEmail").focus();}
+function closeAccount(){$("#accountModal").hidden=true;}
+function setAccountMode(mode){
+  accountMode=mode;
+  document.querySelectorAll("[data-account-mode]").forEach(button=>button.classList.toggle("active",button.dataset.accountMode===mode));
+  const registering=mode==="register";
+  $("#nameLabel").hidden=!registering;$("#accountFullName").hidden=!registering;$("#accountFullName").required=registering;
+  $("#accountPassword").autocomplete=registering?"new-password":"current-password";
+  $("#accountTitle").textContent=registering?"Criar sua conta":"Acesse sua conta";
+  $("#accountSubmit").textContent=registering?"Cadastrar":"Entrar";
+  $("#accountFeedback").textContent="";
+}
+async function loadBetHistory(){
+  if(!accountUser){$("#betHistory").innerHTML='<p class="history-empty">Entre na sua conta para consultar seus bilhetes demonstrativos.</p>';return;}
+  try{
+    const response=await fetch("/api/bets",{credentials:"same-origin",cache:"no-store"}),data=await response.json();
+    if(!response.ok)throw new Error(data.error||"Falha ao carregar histórico.");
+    $("#betHistory").innerHTML=data.bets.length?data.bets.map(bet=>{
+      const date=new Date(bet.created_at).toLocaleString("pt-BR");
+      const selections=Array.isArray(bet.selections)?bet.selections:[];
+      return '<article class="history-item"><div class="history-meta"><b>Bilhete #'+esc(bet.id)+'</b><time>'+esc(date)+'</time></div>'+selections.map(item=>'<p>'+esc(item.fixture)+' · '+esc(item.label)+' <b>'+Number(item.odd).toFixed(2)+'</b></p>').join("")+'<div class="history-total"><span>Valor fictício: '+Number(bet.stake).toLocaleString("pt-BR",{style:"currency",currency:"BRL"})+'</span><b>Retorno ilustrativo: '+Number(bet.potential_return).toLocaleString("pt-BR",{style:"currency",currency:"BRL"})+'</b></div></article>';
+    }).join(""):'<p class="history-empty">Você ainda não salvou nenhum bilhete demonstrativo.</p>';
+  }catch(error){$("#betHistory").innerHTML='<p class="history-empty">'+esc(error.message)+'</p>';}
+}
+function setAccount(user){
+  accountUser=user;
+  $("#accountButton").textContent=user?"Minha conta":"Entrar";
+  $("#accountName").hidden=!user;$("#accountName").textContent=user?user.name:"";
+  $("#logoutButton").hidden=!user;
+  loadBetHistory();
+}
+document.querySelectorAll("[data-account-mode]").forEach(button=>button.addEventListener("click",()=>setAccountMode(button.dataset.accountMode)));
+$("#accountButton").addEventListener("click",()=>openAccount(accountUser?"login":"login"));
+$("#closeAccount").addEventListener("click",closeAccount);
+$("#accountModal").addEventListener("click",event=>{if(event.target===$("#accountModal"))closeAccount();});
+$("#accountForm").addEventListener("submit",async event=>{
+  event.preventDefault();const button=$("#accountSubmit");button.disabled=true;button.textContent="Aguarde…";
+  const payload={email:$("#accountEmail").value.trim(),password:$("#accountPassword").value};
+  if(accountMode==="register")payload.name=$("#accountFullName").value.trim();
+  try{
+    const response=await fetch("/api/auth/"+(accountMode==="register"?"register":"login"),{method:"POST",headers:{"Content-Type":"application/json"},credentials:"same-origin",body:JSON.stringify(payload)});
+    const data=await response.json();if(!response.ok)throw new Error(data.error||"Não foi possível autenticar.");
+    setAccount(data.user);closeAccount();$("#accountForm").reset();
+  }catch(error){$("#accountFeedback").textContent=error.message;}
+  finally{button.disabled=false;button.textContent=accountMode==="register"?"Cadastrar":"Entrar";}
+});
+$("#logoutButton").addEventListener("click",async()=>{
+  await fetch("/api/auth/logout",{method:"POST",credentials:"same-origin"});setAccount(null);$("#accountFeedback").textContent="Você saiu da sua conta.";
+});
+$("#historyRefresh").addEventListener("click",loadBetHistory);
+fetch("/api/auth/me",{credentials:"same-origin",cache:"no-store"}).then(response=>response.json()).then(data=>setAccount(data.user||null)).catch(()=>setAccount(null));
+
 renderBetSlip();
 dateInput.value = todayInBrazil();
 dateInput.addEventListener("change", () => loadMatches(true));
