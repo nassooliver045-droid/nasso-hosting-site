@@ -2,72 +2,58 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#08110e">
-<meta name="description" content="EsporteBet — agenda e placares de futebol com dados esportivos atualizados.">
-<title>EsporteBet | Central de futebol</title>
+<meta name="theme-color" content="#101a14">
+<meta name="description" content="EsporteBet — central de partidas, placares e mercados esportivos demonstrativos.">
+<title>EsporteBet | Esportes ao vivo</title>
 <link rel="stylesheet" href="/style.css">
 <script src="/app.js" defer></script>
 </head>
 <body>
 <header class="topbar">
-  <a class="brand" href="#"><span class="mark">E</span> ESPORTE<span class="green">BET</span></a>
-  <nav><a href="#jogos">Partidas</a><a href="#competicoes">Competições</a><a href="#sobre">Sobre</a></nav>
-  <span class="demo">CENTRAL ESPORTIVA</span>
+  <a class="brand" href="#"><span class="mark">E</span><span>ESPORTE<span class="green">BET</span></span></a>
+  <nav><a class="nav-active" href="#jogos">Esportes</a><a href="#competicoes">Competições</a><a href="#sobre">Sobre</a></nav>
+  <div class="header-actions"><span class="demo">MODO DEMONSTRAÇÃO</span><a class="login-link" href="#sobre">Entrar</a><a class="register-link" href="#sobre">Cadastrar</a></div>
 </header>
-<main>
-  <section class="hero">
-    <div class="eyebrow">⚽ FUTEBOL AO VIVO</div>
-    <h1>O jogo acontece.<br><span>Acompanhe cada lance.</span></h1>
-    <p>Agenda, placares e status de partidas de grandes ligas, Brasileirão e seleções nacionais, com dados de um provedor esportivo.</p>
-    <a class="cta" href="#jogos">Ver partidas <span>→</span></a>
-    <div class="hero-note">Dados esportivos reais • Atualização conforme a cobertura da API</div>
-  </section>
-
-  <section id="jogos" class="section">
-    <div class="section-head">
-      <div><div class="eyebrow">AGENDA E RESULTADOS</div><h2>Partidas</h2></div>
-      <div class="updated"><i></i><span id="updatedAt">Conectando aos dados esportivos…</span></div>
-    </div>
-    <div class="toolbar">
-      <div class="date-tools">
-        <button class="date-arrow" id="prevDay" aria-label="Dia anterior">‹</button>
-        <input id="matchDate" type="date" aria-label="Data das partidas">
-        <button class="date-arrow" id="nextDay" aria-label="Próximo dia">›</button>
-        <button class="today-button" id="todayButton">Hoje</button>
-      </div>
-      <button class="refresh-button" id="refreshButton">↻ Atualizar</button>
-    </div>
-    <div class="filters" role="tablist" aria-label="Filtrar competições">
-      <button class="filter active" data-filter="todos">Todos</button>
-      <button class="filter" data-filter="europa">5 grandes ligas</button>
-      <button class="filter" data-filter="brasileirao">Brasileirão</button>
-      <button class="filter" data-filter="selecoes">Seleções</button>
-    </div>
-    <div id="message" class="message" role="status">Carregando partidas…</div>
-    <div id="matches" class="matches" aria-live="polite"></div>
-    <p class="source-note">Fonte: API-Football / API-Sports. A disponibilidade de partidas, placares e estatísticas depende da cobertura do provedor.</p>
-<section id="bilhete" class="bet-section"><div class="bet-heading"><div><div class="eyebrow">ÁREA DE DEMONSTRAÇÃO</div><h2>Seu bilhete</h2></div><span class="demo-chip">SEM DINHEIRO REAL</span></div><div id="betSelections" class="bet-selections"><p class="empty-slip">Escolha um mercado em uma partida para começar a montar seu bilhete.</p></div><div class="bet-controls"><label for="stake">Valor fictício (R$)</label><input id="stake" type="number" min="1" max="10000" step="0.50" value="10"><div class="bet-total"><span>Odd combinada</span><strong id="combinedOdds">—</strong></div><div class="bet-total"><span>Retorno potencial ilustrativo</span><strong id="potentialReturn">R$ 0,00</strong></div><div class="bet-actions"><button id="clearBet" class="clear-bet" type="button">Limpar</button><button id="simulateBet" class="simulate-bet" type="button" disabled>Simular aposta</button></div><p id="betFeedback" class="bet-feedback" role="status">As cotações são fictícias e servem apenas para demonstrar o funcionamento do bilhete.</p></div></section>
-  </section>
-
-  <section id="competicoes" class="competitions">
-    <div class="eyebrow">COMPETIÇÕES COBERTAS</div>
-    <h2>Futebol do mundo todo.</h2>
-    <div class="competition-grid">
-      <div class="competition"><span>🏴</span><b>Premier League</b><small>Inglaterra</small></div>
-      <div class="competition"><span>🇪🇸</span><b>La Liga</b><small>Espanha</small></div>
-      <div class="competition"><span>🇮🇹</span><b>Serie A</b><small>Itália</small></div>
-      <div class="competition"><span>🇩🇪</span><b>Bundesliga</b><small>Alemanha</small></div>
-      <div class="competition"><span>🇫🇷</span><b>Ligue 1</b><small>França</small></div>
-      <div class="competition"><span>🇧🇷</span><b>Brasileirão Série A</b><small>Brasil</small></div>
-      <div class="competition"><span>🌍</span><b>Seleções</b><small>Competições internacionais e amistosos</small></div>
-    </div>
-  </section>
-
-  <section id="sobre" class="about">
-    <div class="eyebrow">SOBRE A ESPORTEBET</div>
-    <h2>Informação esportiva, com transparência.</h2>
-    <p>Esta versão apresenta agenda e placares de partidas reais. Não aceita apostas, não possui carteira, depósitos ou saques. Cotações de apostas e funcionalidades de aposta permanecem desativadas. Qualquer mudança depende de avaliação jurídica e das autorizações aplicáveis.</p>
-  </section>
-</main>
-<footer><a class="brand" href="#"><span class="mark">E</span> ESPORTE<span class="green">BET</span></a><span>© 2026 EsporteBet · Central esportiva demonstrativa</span></footer>
+<div class="page-shell">
+  <aside class="left-sidebar">
+    <div class="side-title">ESPORTES</div>
+    <a class="side-link side-current" href="#jogos"><span>⚽</span> Futebol <b>•</b></a>
+    <a class="side-link" href="#jogos"><span>🏀</span> Basquete</a>
+    <a class="side-link" href="#jogos"><span>🎾</span> Tênis</a>
+    <a class="side-link" href="#jogos"><span>🏐</span> Vôlei</a>
+    <div class="side-divider"></div>
+    <div class="side-title">COMPETIÇÕES</div>
+    <a class="side-link" href="#competicoes">🇧🇷 Brasileirão</a>
+    <a class="side-link" href="#competicoes">🏴 Premier League</a>
+    <a class="side-link" href="#competicoes">🇪🇸 La Liga</a>
+    <a class="side-link" href="#competicoes">🇮🇹 Serie A</a>
+    <a class="side-link" href="#competicoes">🇩🇪 Bundesliga</a>
+    <a class="side-link" href="#competicoes">🇫🇷 Ligue 1</a>
+    <a class="side-link" href="#competicoes">🌍 Seleções</a>
+    <div class="side-note"><strong>EsporteBet</strong><p>Placar e agenda com dados esportivos. As cotações são apenas ilustrativas.</p></div>
+  </aside>
+  <main class="main-content">
+    <section class="welcome-banner">
+      <div><div class="eyebrow">CENTRAL ESPORTIVA</div><h1>Viva cada jogo.</h1><p>Acompanhe partidas, placares e mercados demonstrativos em um só lugar.</p></div>
+      <div class="banner-ball">⚽</div>
+    </section>
+    <section id="jogos" class="section">
+      <div class="section-head"><div><div class="eyebrow">AGENDA E RESULTADOS</div><h2>Partidas</h2></div><div class="updated"><i></i><span id="updatedAt">Conectando aos dados esportivos…</span></div></div>
+      <div class="toolbar"><div class="date-tools"><button class="date-arrow" id="prevDay" aria-label="Dia anterior">‹</button><input id="matchDate" type="date" aria-label="Data das partidas"><button class="date-arrow" id="nextDay" aria-label="Próximo dia">›</button><button class="today-button" id="todayButton">Hoje</button></div><button class="refresh-button" id="refreshButton">↻ Atualizar</button></div>
+      <div class="filters" role="tablist" aria-label="Filtrar competições"><button class="filter active" data-filter="todos">Todos</button><button class="filter" data-filter="europa">5 grandes ligas</button><button class="filter" data-filter="brasileirao">Brasileirão</button><button class="filter" data-filter="selecoes">Seleções</button></div>
+      <div id="message" class="message" role="status">Carregando partidas…</div>
+      <div id="matches" class="matches" aria-live="polite"></div>
+      <p class="source-note">Fonte: API-Football / API-Sports. A disponibilidade de partidas e placares depende da cobertura do provedor.</p>
+    </section>
+    <section id="competicoes" class="competitions"><div class="eyebrow">FUTEBOL INTERNACIONAL E NACIONAL</div><h2>Competições em destaque</h2><div class="competition-grid">
+      <div class="competition"><span>🏴</span><b>Premier League</b><small>Inglaterra</small></div><div class="competition"><span>🇪🇸</span><b>La Liga</b><small>Espanha</small></div><div class="competition"><span>🇮🇹</span><b>Serie A</b><small>Itália</small></div><div class="competition"><span>🇩🇪</span><b>Bundesliga</b><small>Alemanha</small></div><div class="competition"><span>🇫🇷</span><b>Ligue 1</b><small>França</small></div><div class="competition"><span>🇧🇷</span><b>Brasileirão</b><small>Brasil</small></div><div class="competition"><span>🌍</span><b>Seleções</b><small>Competições internacionais</small></div>
+    </div></section>
+    <section id="sobre" class="about"><div class="eyebrow">SOBRE A ESPORTEBET</div><h2>Esporte em primeiro lugar.</h2><p>Esta versão apresenta agenda e placares de partidas reais. O bilhete é exclusivamente demonstrativo: não aceita apostas com dinheiro real, não possui carteira, depósitos ou saques. As odds exibidas são fictícias, não cotações de mercado.</p></section>
+    <footer><a class="brand" href="#"><span class="mark">E</span><span>ESPORTE<span class="green">BET</span></span></a><span>© 2026 EsporteBet · Central esportiva demonstrativa · 18+</span></footer>
+  </main>
+  <aside class="right-sidebar">
+    <section id="bilhete" class="bet-section"><div class="bet-heading"><div><div class="eyebrow">BILHETE</div><h2>Suas seleções</h2></div><span class="demo-chip">DEMO</span></div><div id="betSelections" class="bet-selections"><p class="empty-slip">Escolha uma cotação demonstrativa para montar seu bilhete.</p></div><div class="bet-controls"><label for="stake">Valor fictício (R$)</label><input id="stake" type="number" min="1" max="10000" step="0.50" value="10"><div class="bet-total"><span>Odd combinada</span><strong id="combinedOdds">—</strong></div><div class="bet-total"><span>Retorno ilustrativo</span><strong id="potentialReturn">R$ 0,00</strong></div><div class="bet-actions"><button id="clearBet" class="clear-bet" type="button">Limpar</button><button id="simulateBet" class="simulate-bet" type="button" disabled>Simular</button></div><p id="betFeedback" class="bet-feedback" role="status">Valores fictícios. Nenhuma transação real.</p></div></section>
+    <div class="right-info"><strong>Jogo responsável</strong><p>Esta plataforma está em modo de demonstração e não movimenta dinheiro.</p></div>
+  </aside>
+</div>
 </body></html>
